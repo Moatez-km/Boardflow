@@ -24,7 +24,7 @@ __decorate([
 ], RegisterDto.prototype, "name", void 0);
 __decorate([
     IsString(),
-    MinLength(1),
+    MinLength(6),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
 //# sourceMappingURL=register.dto.js.map
