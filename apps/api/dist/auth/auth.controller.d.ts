@@ -20,6 +20,17 @@ export declare class AuthController {
             status: "ACTIVE";
         };
     }>;
+    me(req: Request & {
+        user?: {
+            sub: string;
+        };
+    }): Promise<{
+        email: string;
+        name: string;
+        id: string;
+        status: import("@prisma/client").$Enums.UserStatus;
+        createdAt: Date;
+    } | null>;
     logout(res: express.Response): {
         message: string;
     };

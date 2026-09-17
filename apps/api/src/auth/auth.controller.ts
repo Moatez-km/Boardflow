@@ -1,13 +1,17 @@
 import {
     Body,
     Controller,
+    Get,
     Post,
+    Req,
     Res,
+    UseGuards,
 } from '@nestjs/common';
 import express from 'express';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { AuthGuard } from './auth.guard.js';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +37,12 @@ export class AuthController {
         return {
             user: result.user,
         };
+    }
+
+    @Get('me')
+    @UseGuards(AuthGuard)
+    async me(@Req() req: Request & { user?: { sub: string } }) {
+        return this.authService.findUserById(req.user!.sub);
     }
 
     @Post('logout')
