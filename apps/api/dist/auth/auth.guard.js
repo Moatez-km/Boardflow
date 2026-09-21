@@ -24,7 +24,11 @@ let AuthGuard = class AuthGuard {
         }
         try {
             const payload = await this.jwtService.verifyAsync(token);
-            request.user = payload;
+            request.user = {
+                id: payload.sub,
+                email: payload.email,
+                sub: payload.sub,
+            };
             return true;
         }
         catch {
