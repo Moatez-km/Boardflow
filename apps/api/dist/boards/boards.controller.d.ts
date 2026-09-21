@@ -1,11 +1,10 @@
 import { BoardsService } from './boards.service.js';
 import { CreateBoardDto } from './dto/create-board.dto.js';
 import { UpdateBoardDto } from './dto/update-board.dto.js';
-import { type AuthenticatedUser } from '../auth/decorators/current-user.decorator.js';
 export declare class BoardsController {
     private readonly boardsService;
     constructor(boardsService: BoardsService);
-    create(user: AuthenticatedUser, dto: CreateBoardDto): Promise<{
+    create(request: any, dto: CreateBoardDto): Promise<{
         id: string;
         title: string;
         description: string | null;
@@ -15,7 +14,7 @@ export declare class BoardsController {
         updatedAt: Date;
         ownerId: string;
     }>;
-    findAll(user: AuthenticatedUser, search?: string): Promise<{
+    findAll(request: any, search?: string): Promise<{
         id: string;
         title: string;
         description: string | null;
@@ -25,7 +24,7 @@ export declare class BoardsController {
         updatedAt: Date;
         ownerId: string;
     }[]>;
-    findOne(user: AuthenticatedUser, id: string): Promise<{
+    findOne(request: any, id: string): Promise<{
         id: string;
         title: string;
         description: string | null;
@@ -35,7 +34,7 @@ export declare class BoardsController {
         updatedAt: Date;
         ownerId: string;
     }>;
-    update(user: AuthenticatedUser, id: string, dto: UpdateBoardDto): Promise<{
+    update(request: any, id: string, dto: UpdateBoardDto): Promise<{
         id: string;
         title: string;
         description: string | null;
@@ -45,7 +44,7 @@ export declare class BoardsController {
         updatedAt: Date;
         ownerId: string;
     }>;
-    remove(user: AuthenticatedUser, id: string): Promise<{
+    remove(request: any, id: string): Promise<{
         message: string;
     }>;
 }

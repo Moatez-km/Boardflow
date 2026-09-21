@@ -47,7 +47,7 @@ export class BoardsService {
                 id: boardId,
                 ownerId: userId,
             },
-            //implement section here
+            //implement section
         });
 
         if (!board) {

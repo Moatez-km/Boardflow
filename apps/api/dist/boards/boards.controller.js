@@ -10,36 +10,35 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards, } from '@nestjs/common';
 import { BoardsService } from './boards.service.js';
 import { CreateBoardDto } from './dto/create-board.dto.js';
 import { UpdateBoardDto } from './dto/update-board.dto.js';
 import { AuthGuard } from '../auth/auth.guard.js';
-import { CurrentUser, } from '../auth/decorators/current-user.decorator.js';
 let BoardsController = class BoardsController {
     boardsService;
     constructor(boardsService) {
         this.boardsService = boardsService;
     }
-    create(user, dto) {
-        return this.boardsService.create(user.id, dto);
+    create(request, dto) {
+        return this.boardsService.create(request.user.id, dto);
     }
-    findAll(user, search) {
-        return this.boardsService.findAll(user.id, search);
+    findAll(request, search) {
+        return this.boardsService.findAll(request.user.id, search);
     }
-    findOne(user, id) {
-        return this.boardsService.findOne(user.id, id);
+    findOne(request, id) {
+        return this.boardsService.findOne(request.user.id, id);
     }
-    update(user, id, dto) {
-        return this.boardsService.update(user.id, id, dto);
+    update(request, id, dto) {
+        return this.boardsService.update(request.user.id, id, dto);
     }
-    remove(user, id) {
-        return this.boardsService.remove(user.id, id);
+    remove(request, id) {
+        return this.boardsService.remove(request.user.id, id);
     }
 };
 __decorate([
     Post(),
-    __param(0, CurrentUser()),
+    __param(0, Req()),
     __param(1, Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, CreateBoardDto]),
@@ -47,7 +46,7 @@ __decorate([
 ], BoardsController.prototype, "create", null);
 __decorate([
     Get(),
-    __param(0, CurrentUser()),
+    __param(0, Req()),
     __param(1, Query('search')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
@@ -55,7 +54,7 @@ __decorate([
 ], BoardsController.prototype, "findAll", null);
 __decorate([
     Get(':id'),
-    __param(0, CurrentUser()),
+    __param(0, Req()),
     __param(1, Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
@@ -63,7 +62,7 @@ __decorate([
 ], BoardsController.prototype, "findOne", null);
 __decorate([
     Patch(':id'),
-    __param(0, CurrentUser()),
+    __param(0, Req()),
     __param(1, Param('id')),
     __param(2, Body()),
     __metadata("design:type", Function),
@@ -72,7 +71,7 @@ __decorate([
 ], BoardsController.prototype, "update", null);
 __decorate([
     Delete(':id'),
-    __param(0, CurrentUser()),
+    __param(0, Req()),
     __param(1, Param('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
