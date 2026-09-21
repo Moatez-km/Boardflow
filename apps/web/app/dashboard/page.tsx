@@ -95,9 +95,10 @@ export default function DashboardPage() {
             </p>
 
             <section className="mt-8">
-                <h2 className="mb-4 text-2xl font-semibold">
-                    Your Boards
-                </h2>
+                <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-2xl font-semibold"> Your Boards </h2>
+                    <button type="button" onClick={() => router.push('/boards/newBoard')} className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700" > + Create Board </button>
+                </div>
 
                 {boardsLoading && (
                     <p className="text-gray-500">
