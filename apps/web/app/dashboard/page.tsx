@@ -15,14 +15,25 @@ type Board = {
     updatedAt: string;
 };
 
-export default function DashboardPage() {
+export default function DashboardPage({
+    initialBoards,
+}: {
+    initialBoards: Board[];
+}) {
     const router = useRouter();
     const { user, isLoading } = useAuth();
 
-    const [boards, setBoards] = useState<Board[]>([]);
+    const [boards, setBoards] = useState<Board[]>(initialBoards);
     const [boardsLoading, setBoardsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const handleBoardDeleted = (deletedBoardId: string) => {
+        setBoards((previousBoards) =>
+            previousBoards.filter(
+                (board) => board.id !== deletedBoardId
+            )
+        );
+    };
     // Redirect if user is not authenticated
     useEffect(() => {
         if (!isLoading && !user) {
@@ -124,6 +135,7 @@ export default function DashboardPage() {
                             <BoardCard
                                 key={board.id}
                                 board={board}
+                                onDeleted={handleBoardDeleted}
                             />
                         ))}
                     </div>
