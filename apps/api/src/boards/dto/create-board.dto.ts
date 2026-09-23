@@ -3,6 +3,7 @@ import { IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-valida
 export enum BoardVisibilityDto {
     PRIVATE = 'PRIVATE',
     PUBLIC = 'PUBLIC',
+
 }
 
 export enum ViewTypeDto {

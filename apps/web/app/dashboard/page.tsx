@@ -12,6 +12,7 @@ type Board = {
     title: string;
     description?: string | null;
     viewType: string;
+    visibility: string;
     updatedAt: string;
 };
 

@@ -3,7 +3,9 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-
+type Visibility =
+    | 'PRIVATE'
+    | 'PUBLIC';
 type ViewType =
     | 'KANBAN'
     | 'CANVAS'
@@ -21,7 +23,8 @@ export default function EditBoardPage() {
     const [description, setDescription] = useState('');
     const [viewType, setViewType] =
         useState<ViewType>('KANBAN');
-
+    const [visibility, setVisibility] =
+        useState<Visibility>('PRIVATE');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -78,6 +81,7 @@ export default function EditBoardPage() {
                 setTitle(board.title ?? '');
                 setDescription(board.description ?? '');
                 setViewType(board.viewType ?? 'KANBAN');
+                setVisibility(board.visibility ?? 'PRIVATE');
             } catch (error) {
                 console.error(
                     'Failed to load board:',
@@ -121,6 +125,7 @@ export default function EditBoardPage() {
                         title,
                         description,
                         viewType,
+                        visibility,
                     }),
                 }
             );
@@ -287,7 +292,35 @@ export default function EditBoardPage() {
                             </option>
                         </select>
                     </div>
+                    {/* Visibility */}
+                    <div>
+                        <label
+                            htmlFor="visibility"
+                            className="mb-2 block text-sm font-medium text-white"
+                        >
+                            Visibility
+                        </label>
 
+                        <select
+                            id="visibility"
+                            value={visibility}
+                            onChange={(event) =>
+                                setVisibility(
+                                    event.target.value as Visibility
+                                )
+                            }
+                            disabled={saving}
+                            className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-white outline-none transition focus:border-white focus:ring-1 focus:ring-white disabled:opacity-50"
+                        >
+                            <option value="PRIVATE">
+                                Private
+                            </option>
+
+                            <option value="PUBLIC">
+                                Public
+                            </option>
+                        </select>
+                    </div>
                     {/* Error */}
                     {error && (
                         <div className="rounded-lg border border-red-900 bg-red-950/50 p-3 text-sm text-red-400">

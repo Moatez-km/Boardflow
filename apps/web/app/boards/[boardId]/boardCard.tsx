@@ -8,6 +8,7 @@ type Board = {
     title: string;
     description?: string | null;
     viewType: string;
+    visibility: string;
     updatedAt: string;
 };
 
@@ -77,6 +78,9 @@ export function BoardCard({
 
             <p className="mt-3 text-xs text-gray-500">
                 View: {board.viewType}
+            </p>
+            <p className="mt-3 text-xs text-gray-500">
+                Visibility: {board.visibility}
             </p>
 
             {error && (

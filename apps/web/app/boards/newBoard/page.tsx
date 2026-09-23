@@ -2,6 +2,10 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+type Visibility =
+    | 'PRIVATE'
+    | 'PUBLIC';
+
 
 type ViewType =
     | 'KANBAN'
@@ -16,7 +20,7 @@ export default function CreateBoardPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [viewType, setViewType] = useState<ViewType>('KANBAN');
-
+    const [visibility, setVisibility] = useState<Visibility>('PRIVATE');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +45,7 @@ export default function CreateBoardPage() {
                         title,
                         description,
                         viewType,
+                        visibility,
                     }),
                 }
             );
@@ -181,6 +186,36 @@ export default function CreateBoardPage() {
                         </select>
                     </div>
 
+                    {/* Visibility */}
+                    <div>
+                        <label
+                            htmlFor="visibility"
+                            className="mb-2 block text-sm font-medium text-white"
+                        >
+                            Visibility
+                        </label>
+
+                        <select
+                            id="visibility"
+                            value={visibility}
+                            onChange={(event) =>
+                                setVisibility(
+                                    event.target.value as Visibility
+                                )
+                            }
+                            className="w-full rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 text-white outline-none transition focus:border-white focus:ring-1 focus:ring-white"
+                        >
+                            <option value="PRIVATE">
+                                Private
+                            </option>
+
+                            <option value="PUBLIC">
+                                Public
+                            </option>
+
+
+                        </select>
+                    </div>
                     {/* Error */}
                     {error && (
                         <div className="rounded-lg border border-red-900 bg-red-950/50 p-3 text-sm text-red-400">
