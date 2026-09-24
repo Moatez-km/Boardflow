@@ -1,7 +1,8 @@
 import {
     ForbiddenException,
     Injectable,
-    NotFoundException
+    NotFoundException,
+    BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateCardDto } from './dto/create-card.dto.js';
@@ -78,5 +79,67 @@ export class CardsService {
 
         return board;
     }
+    async create(
+        userId: string,
+        boardId: string,
+        dto: CreateCardDto,
+    ) {
+        await this.assertBoardPermission(userId, boardId, 'create');
+
+        if (dto.sectionId) {
+            const section = await this.prisma.section.findFirst({
+                where: {
+                    id: dto.sectionId,
+                    boardId,
+                },
+            });
+
+            if (!section) {
+                throw new BadRequestException(
+                    'Section does not belong to this board',
+                );
+            }
+        }
+
+        const lastCard = await this.prisma.card.findFirst({
+            where: {
+                boardId,
+                sectionId: dto.sectionId ?? null,
+            },
+            orderBy: {
+                position: 'desc',
+            },
+        });
+
+        const position = lastCard
+            ? Number(lastCard.position) + 1000
+            : 1000;
+
+        return this.prisma.card.create({
+            data: {
+                boardId,
+                sectionId: dto.sectionId ?? null,
+                title: dto.title,
+                content: JSON.stringify(dto.content),
+                type: dto.type ?? 'TEXT',
+                position,
+                createdById: userId,
+                startAt: dto.startAt
+                    ? new Date(dto.startAt)
+                    : undefined,
+                endAt: dto.endAt
+                    ? new Date(dto.endAt)
+                    : undefined,
+                x: dto.x,
+                y: dto.y,
+                latitude: dto.latitude,
+                longitude: dto.longitude,
+            },
+            include: {
+                attachments: true,
+            },
+        });
+    }
+
 
 }
