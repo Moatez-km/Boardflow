@@ -140,6 +140,21 @@ export class CardsService {
             },
         });
     }
+    async findAll(userId: string, boardId: string) {
+        await this.assertBoardPermission(userId, boardId, 'read');
+
+        return this.prisma.card.findMany({
+            where: {
+                boardId,
+            },
+            orderBy: {
+                position: 'asc',
+            },
+            include: {
+                attachments: true,
+            },
+        });
+    }
 
 
 }
