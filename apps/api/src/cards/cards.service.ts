@@ -147,9 +147,10 @@ export class CardsService {
             where: {
                 boardId,
             },
-            orderBy: {
-                position: 'asc',
-            },
+            orderBy: [
+                { position: 'asc' },
+                { sectionId: 'asc' }
+            ],
             include: {
                 attachments: true,
             },

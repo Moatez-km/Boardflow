@@ -1,6 +1,5 @@
 import { Controller } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard.js';
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 
 import { CardsService } from './cards.service.js';
 import { CreateCardDto } from './dto/create-card.dto.js';
