@@ -156,5 +156,21 @@ export class CardsService {
         });
     }
 
+    private async getCardOrFail(cardId: string) {
+        const card = await this.prisma.card.findUnique({
+            where: {
+                id: cardId,
+            },
+            include: {
+                board: true,
+            },
+        });
+
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+
+        return card;
+    }
 
 }
