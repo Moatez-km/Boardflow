@@ -225,5 +225,25 @@ export class CardsService {
             },
         });
     }
+    async remove(userId: string, cardId: string) {
+        const card = await this.getCardOrFail(cardId);
+
+        await this.assertBoardPermission(
+            userId,
+            card.boardId,
+            'delete',
+        );
+
+        await this.prisma.card.delete({
+            where: {
+                id: cardId,
+            },
+        });
+
+        return {
+            success: true,
+            id: cardId,
+        };
+    }
 
 }
