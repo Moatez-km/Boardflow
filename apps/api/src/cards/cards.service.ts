@@ -245,5 +245,43 @@ export class CardsService {
             id: cardId,
         };
     }
+    async reorder(
+        userId: string,
+        cardId: string,
+        dto: ReorderCardDto,
+    ) {
+        const card = await this.getCardOrFail(cardId);
+
+        await this.assertBoardPermission(
+            userId,
+            card.boardId,
+            'edit',
+        );
+
+        if (dto.sectionId) {
+            const section = await this.prisma.section.findFirst({
+                where: {
+                    id: dto.sectionId,
+                    boardId: card.boardId,
+                },
+            });
+
+            if (!section) {
+                throw new BadRequestException(
+                    'Section does not belong to this board',
+                );
+            }
+        }
+
+        return this.prisma.card.update({
+            where: {
+                id: cardId,
+            },
+            data: {
+                sectionId: dto.sectionId ?? null,
+                position: dto.position,
+            },
+        });
+    }
 
 }
