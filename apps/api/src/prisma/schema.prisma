@@ -19,10 +19,25 @@ model User {
   name         String
   status       UserStatus @default(ACTIVE)
   boards       Board[]
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  
+
+  cards       Card[]
+  attachments Attachment[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
   @@map("users")
+}
+
+model Section {
+  id       String  @id @default(uuid())
+  boardId  String
+  title    String
+  position Decimal @db.Decimal(20, 10)
+
+  board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards Card[]
+
+  @@index([boardId, position])
 }
 
 enum BoardVisibility {
@@ -45,15 +60,75 @@ model Board {
   visibility  BoardVisibility @default(PRIVATE)
   viewType    ViewType        @default(KANBAN)
 
-  ownerId     String
-  owner       User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-
-
+  ownerId   String
+  owner     User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  sections  Section[]
+  cards     Card[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([ownerId])
   @@index([createdAt])
 }
 
+enum CardType {
+  TEXT
+  IMAGE
+  FILE
+  VIDEO
+  AUDIO
+  LINK
+}
+
+model Card {
+  id        String  @id @default(uuid())
+  boardId   String
+  sectionId String?
+
+  title   String
+  content Json?
+  type    CardType @default(TEXT)
+
+  position Decimal @db.Decimal(20, 10)
+
+  x Float?
+  y Float?
+
+  startAt DateTime?
+  endAt   DateTime?
+
+  latitude  Decimal? @db.Decimal(10, 7)
+  longitude Decimal? @db.Decimal(10, 7)
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  section   Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  createdBy User     @relation(fields: [createdById], references: [id])
+
+  attachments Attachment[]
+
+  @@index([boardId])
+  @@index([sectionId])
+  @@index([boardId, sectionId, position])
+}
+
+model Attachment {
+  id     String @id @default(uuid())
+  cardId String
+
+  storageKey String
+  filename   String
+  mimeType   String
+  size       Int
+
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  card       Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@index([cardId])
+}

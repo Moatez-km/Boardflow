@@ -26,14 +26,14 @@ let BoardsController = class BoardsController {
     findAll(request, search) {
         return this.boardsService.findAll(request.user.id, search);
     }
-    findOne(request, id) {
-        return this.boardsService.findOne(request.user.id, id);
+    async findOne(boardId, request) {
+        return this.boardsService.findOne(request.user.id, boardId);
     }
-    update(request, id, dto) {
-        return this.boardsService.update(request.user.id, id, dto);
+    async update(boardId, request, dto) {
+        return this.boardsService.update(request.user.id, boardId, dto);
     }
-    remove(request, id) {
-        return this.boardsService.remove(request.user.id, id);
+    async remove(boardId, request) {
+        return this.boardsService.remove(request.user.id, boardId);
     }
 };
 __decorate([
@@ -54,28 +54,28 @@ __decorate([
 ], BoardsController.prototype, "findAll", null);
 __decorate([
     Get(':id'),
-    __param(0, Req()),
-    __param(1, Param('id')),
+    __param(0, Param('id')),
+    __param(1, Req()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
 ], BoardsController.prototype, "findOne", null);
 __decorate([
     Patch(':id'),
-    __param(0, Req()),
-    __param(1, Param('id')),
+    __param(0, Param('id')),
+    __param(1, Req()),
     __param(2, Body()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, UpdateBoardDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [String, Object, UpdateBoardDto]),
+    __metadata("design:returntype", Promise)
 ], BoardsController.prototype, "update", null);
 __decorate([
     Delete(':id'),
-    __param(0, Req()),
-    __param(1, Param('id')),
+    __param(0, Param('id')),
+    __param(1, Req()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
 ], BoardsController.prototype, "remove", null);
 BoardsController = __decorate([
     Controller('boards'),

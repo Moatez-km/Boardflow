@@ -34,21 +34,48 @@ export class BoardsController {
     }
 
     @Get(':id')
-    findOne(@Req() request: any, @Param('id') id: string) {
-        return this.boardsService.findOne(request.user.id, id);
+    async findOne(
+        @Param('id') boardId: string,
+        @Req() request: Request & {
+            user: {
+                id: string;
+            };
+        },
+    ) {
+        return this.boardsService.findOne(
+            request.user.id,
+            boardId,
+        );
     }
-
     @Patch(':id')
-    update(
-        @Req() request: any,
-        @Param('id') id: string,
+    async update(
+        @Param('id') boardId: string,
+        @Req() request: Request & {
+            user: {
+                id: string;
+            };
+        },
         @Body() dto: UpdateBoardDto,
     ) {
-        return this.boardsService.update(request.user.id, id, dto);
+        return this.boardsService.update(
+            request.user.id,
+            boardId,
+            dto,
+        );
     }
 
     @Delete(':id')
-    remove(@Req() request: any, @Param('id') id: string) {
-        return this.boardsService.remove(request.user.id, id);
+    async remove(
+        @Param('id') boardId: string,
+        @Req() request: Request & {
+            user: {
+                id: string;
+            };
+        },
+    ) {
+        return this.boardsService.remove(
+            request.user.id,
+            boardId,
+        );
     }
 }

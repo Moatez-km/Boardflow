@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Injectable, NotFoundException, } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 let BoardsService = class BoardsService {
     prisma;
@@ -29,10 +29,10 @@ let BoardsService = class BoardsService {
         return this.prisma.board.findMany({
             where: {
                 ownerId: userId,
-                ...(search
+                ...(search?.trim()
                     ? {
                         title: {
-                            contains: search,
+                            contains: search.trim(),
                             mode: 'insensitive',
                         },
                     }
@@ -43,7 +43,7 @@ let BoardsService = class BoardsService {
             },
         });
     }
-    async findOne(userId, boardId) {
+    async findOneForOwner(userId, boardId) {
         const board = await this.prisma.board.findFirst({
             where: {
                 id: boardId,
@@ -55,8 +55,11 @@ let BoardsService = class BoardsService {
         }
         return board;
     }
+    async findOne(userId, boardId) {
+        return this.checkReadAccess(boardId, userId);
+    }
     async update(userId, boardId, dto) {
-        await this.findOne(userId, boardId);
+        await this.findOneForOwner(userId, boardId);
         return this.prisma.board.update({
             where: {
                 id: boardId,
@@ -65,7 +68,7 @@ let BoardsService = class BoardsService {
         });
     }
     async remove(userId, boardId) {
-        await this.findOne(userId, boardId);
+        await this.findOneForOwner(userId, boardId);
         await this.prisma.board.delete({
             where: {
                 id: boardId,
@@ -74,6 +77,34 @@ let BoardsService = class BoardsService {
         return {
             message: 'Board deleted successfully',
         };
+    }
+    async getBoardOrFail(boardId) {
+        const board = await this.prisma.board.findUnique({
+            where: {
+                id: boardId,
+            },
+        });
+        if (!board) {
+            throw new NotFoundException('Board not found');
+        }
+        return board;
+    }
+    async checkReadAccess(boardId, userId) {
+        const board = await this.getBoardOrFail(boardId);
+        const isOwner = userId !== undefined &&
+            board.ownerId === userId;
+        const isPublic = board.visibility === 'PUBLIC';
+        if (isOwner || isPublic) {
+            return board;
+        }
+        throw new ForbiddenException('You do not have permission to view this board');
+    }
+    async checkOwnerAccess(boardId, userId) {
+        const board = await this.getBoardOrFail(boardId);
+        if (board.ownerId !== userId) {
+            throw new ForbiddenException('Only the board owner can perform this action');
+        }
+        return board;
     }
 };
 BoardsService = __decorate([

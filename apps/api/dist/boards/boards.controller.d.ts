@@ -6,45 +6,57 @@ export declare class BoardsController {
     constructor(boardsService: BoardsService);
     create(request: any, dto: CreateBoardDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
+        createdAt: Date;
+        updatedAt: Date;
         ownerId: string;
     }>;
     findAll(request: any, search?: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
+        createdAt: Date;
+        updatedAt: Date;
         ownerId: string;
     }[]>;
-    findOne(request: any, id: string): Promise<{
+    findOne(boardId: string, request: Request & {
+        user: {
+            id: string;
+        };
+    }): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
-        ownerId: string;
-    }>;
-    update(request: any, id: string, dto: UpdateBoardDto): Promise<{
-        id: string;
         createdAt: Date;
         updatedAt: Date;
+        ownerId: string;
+    }>;
+    update(boardId: string, request: Request & {
+        user: {
+            id: string;
+        };
+    }, dto: UpdateBoardDto): Promise<{
+        id: string;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
+        createdAt: Date;
+        updatedAt: Date;
         ownerId: string;
     }>;
-    remove(request: any, id: string): Promise<{
+    remove(boardId: string, request: Request & {
+        user: {
+            id: string;
+        };
+    }): Promise<{
         message: string;
     }>;
 }
