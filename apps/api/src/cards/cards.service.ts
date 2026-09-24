@@ -10,6 +10,7 @@ import { ReorderCardDto } from './dto/reorder-card.dto.js';
 import { Prisma } from '@prisma/client';
 
 
+
 @Injectable()
 export class CardsService {
     constructor(private prisma: PrismaService) { }
@@ -28,6 +29,22 @@ export class CardsService {
 
         return card;
     }
+
+    /*  private async assertBoardPermission(
+    userId: string,
+    boardId: string,
+    permission: 'read' | 'create' | 'edit' | 'delete',
+  ) {
+    const allowed = await this.permissionsService.can(
+      userId,
+      boardId,
+      permission,
+    );
+  
+    if (!allowed) {
+      throw new ForbiddenException('Insufficient permission');
+    }
+  }*/
 
 
 
