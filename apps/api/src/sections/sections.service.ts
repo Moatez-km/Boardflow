@@ -50,5 +50,25 @@ export class SectionsService {
             },
         });
     }
+    async findAll(userId: string, boardId: string) {
+        await this.assertBoardOwner(userId, boardId);
+
+        return this.prisma.section.findMany({
+            where: {
+                boardId,
+            },
+            orderBy: {
+                position: 'asc',
+            },
+            include: {
+                cards: {
+                    orderBy: {
+                        position: 'asc',
+                    },
+                },
+            },
+        });
+    }
+
 
 }
