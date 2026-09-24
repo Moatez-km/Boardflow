@@ -46,6 +46,37 @@ export class CardsService {
     }
   }*/
 
+    private async assertBoardPermission(
+        userId: string,
+        boardId: string,
+        permission: 'read' | 'create' | 'edit' | 'delete',
+    ) {
+        const board = await this.prisma.board.findUnique({
+            where: {
+                id: boardId,
+            },
+            select: {
+                id: true,
+                ownerId: true,
+                visibility: true,
+            },
+        });
 
+        if (!board) {
+            throw new NotFoundException('Board not found');
+        }
+
+        // Temporary Phase 3 rule:
+        // Only the board owner can access and modify cards.
+        const isOwner = board.ownerId === userId;
+
+        if (!isOwner) {
+            throw new ForbiddenException(
+                'You do not have permission to access this board',
+            );
+        }
+
+        return board;
+    }
 
 }
