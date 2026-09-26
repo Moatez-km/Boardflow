@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/components/auth-provider';
-import DashboardNavbar from './dashboard-navbar';
+import Sidebar from '@/src/components/dashbord/SideBar';
 import { BoardCard } from '../boards/[boardId]/boardCard';
 
 type Board = {
@@ -49,6 +48,7 @@ export default function DashboardPage({
             board.title.toLowerCase().includes(searchValue)
         );
     }, [boards, search]);
+
     // Redirect if user is not authenticated
     useEffect(() => {
         if (!isLoading && !user) {
@@ -73,8 +73,6 @@ export default function DashboardPage({
                 );
 
                 const data = await response.json();
-
-                console.log('Boards response:', data);
 
                 if (!response.ok) {
                     throw new Error(
@@ -101,7 +99,11 @@ export default function DashboardPage({
     }, [user]);
 
     if (isLoading) {
-        return <p className="p-8">Loading...</p>;
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500">
+                <p className="text-sm font-medium">Loading...</p>
+            </div>
+        );
     }
 
     if (!user) {
@@ -109,76 +111,88 @@ export default function DashboardPage({
     }
 
     return (
-        <main className="p-8">
-            <DashboardNavbar />
-
-            <h1 className="text-3xl font-bold">
-                Dashboard
-            </h1>
-
-            <p className="mt-2">
-                Welcome, {user.name}
-            </p>
-
-            <section className="mt-8">
-                <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold"> Your Boards </h2>
-                    <button type="button" onClick={() => router.push('/boards/newBoard')} className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700" > + Create Board </button>
+        <div className="min-h-screen bg-slate-50">
+            <Sidebar />
+            <main className="min-h-screen p-6 md:ml-64 md:p-8">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+                        Dashboard
+                    </h1>
+                    <p className="mt-1 text-sm text-slate-500">
+                        Welcome back, <span className="font-medium text-slate-700">{user.name}</span>
+                    </p>
                 </div>
-                {/* Search input */}
-                <div className="mb-6">
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search boards by title..."
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 md:max-w-md"
-                    />
-                </div>
-                {boardsLoading && (
-                    <p className="text-gray-500">
-                        Loading boards...
-                    </p>
-                )}
 
-                {error && (
-                    <p className="text-red-500">
-                        {error}
-                    </p>
-                )}
+                <section className="mt-8">
+                    <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <h2 className="text-xl font-bold text-slate-800">
+                            Your Boards
+                        </h2>
+                        <button
+                            type="button"
+                            onClick={() => router.push('/boards/newBoard')}
+                            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                            + Create Board
+                        </button>
+                    </div>
 
-                {!boardsLoading && !error && boards.length === 0 && (
-                    <p className="text-gray-500">
-                        You don't have any boards yet.
-                    </p>
-                )}
+                    {/* Search input */}
+                    <div className="mb-6">
+                        <input
+                            type="search"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder="Search boards by title..."
+                            className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 md:max-w-md shadow-sm"
+                        />
+                    </div>
 
-                {/* No search results */}
-                {!boardsLoading &&
-                    !error &&
-                    boards.length > 0 &&
-                    filteredBoards.length === 0 && (
-                        <p className="text-gray-500">
-                            No boards found for "{search}".
+                    {boardsLoading && (
+                        <p className="text-sm text-slate-500">
+                            Loading boards...
                         </p>
                     )}
 
-                {/* Display all boards or filtered boards */}
-                {!boardsLoading &&
-                    !error &&
-                    filteredBoards.length > 0 && (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredBoards.map((board) => (
-                                <BoardCard
-                                    key={board.id}
-                                    board={board}
-                                    onDeleted={handleBoardDeleted}
-                                />
-                            ))}
+                    {error && (
+                        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+                            {error}
                         </div>
                     )}
-            </section>
-        </main>
+
+                    {!boardsLoading && !error && boards.length === 0 && (
+                        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+                            <p className="text-sm font-medium text-slate-700">No boards yet</p>
+                            <p className="mt-1 text-xs text-slate-500">Create your first board to start organizing your workflow.</p>
+                        </div>
+                    )}
+
+                    {/* No search results */}
+                    {!boardsLoading &&
+                        !error &&
+                        boards.length > 0 &&
+                        filteredBoards.length === 0 && (
+                            <p className="text-sm text-slate-500">
+                                No boards found for &ldquo;{search}&rdquo;.
+                            </p>
+                        )}
+
+                    {/* Display all boards or filtered boards */}
+                    {!boardsLoading &&
+                        !error &&
+                        filteredBoards.length > 0 && (
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {filteredBoards.map((board) => (
+                                    <BoardCard
+                                        key={board.id}
+                                        board={board}
+                                        onDeleted={handleBoardDeleted}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                </section>
+            </main>
+        </div>
     );
 }
-

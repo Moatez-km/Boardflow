@@ -34,7 +34,7 @@ export declare class BoardsService {
         viewType: import("@prisma/client").$Enums.ViewType;
         ownerId: string;
     }>;
-    findOne(userId: string, boardId: string): Promise<{
+    findOne(userId: string | undefined, boardId: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;

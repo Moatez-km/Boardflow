@@ -67,45 +67,57 @@ export function BoardCard({
     };
 
     return (
-        <article className="rounded-lg border p-4">
-            <h2 className="font-semibold">{board.title}</h2>
+        <article className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md">
+            <div>
+                <h2 className="text-base font-semibold text-slate-800 transition group-hover:text-blue-600">
+                    {board.title}
+                </h2>
 
-            {board.description && (
-                <p className="mt-2 text-sm text-gray-600">
-                    {board.description}
-                </p>
-            )}
+                {board.description ? (
+                    <p className="mt-2 text-sm text-slate-600 line-clamp-2">
+                        {board.description}
+                    </p>
+                ) : (
+                    <p className="mt-2 text-xs italic text-slate-400">
+                        No description provided
+                    </p>
+                )}
+            </div>
 
-            <p className="mt-3 text-xs text-gray-500">
-                View: {board.viewType}
-            </p>
-            <p className="mt-3 text-xs text-gray-500">
-                Visibility: {board.visibility}
-            </p>
+            <div>
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                    <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
+                        {board.viewType}
+                    </span>
+                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 font-medium text-blue-700">
+                        {board.visibility}
+                    </span>
+                </div>
 
-            {error && (
-                <p className="mt-3 text-sm text-red-600">
-                    {error}
-                </p>
-            )}
+                {error && (
+                    <p className="mt-3 text-xs text-red-600">
+                        {error}
+                    </p>
+                )}
 
-            <div className="mt-4 flex gap-2">
-                <button
-                    type="button"
-                    onClick={() => router.push(`/boards/${board.id}/edit`)}
-                    className="rounded-lg border px-3 py-2 text-sm transition hover:bg-gray-100"
-                >
-                    Edit
-                </button>
+                <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
+                    <button
+                        type="button"
+                        onClick={() => router.push(`/boards/${board.id}/edit`)}
+                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900"
+                    >
+                        Edit
+                    </button>
 
-                <button
-                    type="button"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="rounded-lg bg-red-600 px-3 py-2 text-sm text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {isDeleting ? 'Deleting...' : 'Delete'}
-                </button>
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                </div>
             </div>
         </article>
     );

@@ -33,13 +33,13 @@ export default function EditBoardPage() {
      * Load existing board
      */
     useEffect(() => {
-        if (!boardId) {
-            setError('Board ID is missing.');
-            setLoading(false);
-            return;
-        }
-
         async function loadBoard() {
+            if (!boardId) {
+                setError('Board ID is missing.');
+                setLoading(false);
+                return;
+            }
+
             try {
                 setLoading(true);
                 setError(null);
