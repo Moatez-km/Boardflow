@@ -62,8 +62,8 @@ export class BoardsService {
         return board;
     }
 
-    // Use this when an authenticated owner opens a board
-    async findOne(userId: string, boardId: string) {
+    // Use this when an authenticated or unauthenticated user opens a board
+    async findOne(userId: string | undefined, boardId: string) {
         return this.checkReadAccess(boardId, userId);
     }
 
