@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/components/auth-provider';
 import Sidebar from '@/src/components/dashbord/SideBar';
 import { BoardCard } from '../boards/[boardId]/boardCard';
-
+import { GooeyInput } from '@/src/components/ui/gooey-input';
 type Board = {
     id: string;
     title: string;
@@ -138,14 +138,9 @@ export default function DashboardPage({
                     </div>
 
                     {/* Search input */}
-                    <div className="mb-6">
-                        <input
-                            type="search"
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search boards by title..."
-                            className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 md:max-w-md shadow-sm"
-                        />
+
+                    <div className="mb-6 ">
+                        <GooeyInput value={search} onValueChange={setSearch} />
                     </div>
 
                     {boardsLoading && (
