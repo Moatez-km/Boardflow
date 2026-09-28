@@ -131,6 +131,13 @@ describe('BoardsService', () => {
         where: {
           ownerId: 'user-1',
         },
+        include: {
+          sections: {
+            orderBy: {
+              position: 'asc',
+            },
+          },
+        },
         orderBy: {
           updatedAt: 'desc',
         },
@@ -150,6 +157,13 @@ describe('BoardsService', () => {
             mode: 'insensitive',
           },
         },
+        include: {
+          sections: {
+            orderBy: {
+              position: 'asc',
+            },
+          },
+        },
         orderBy: {
           updatedAt: 'desc',
         },
@@ -164,6 +178,13 @@ describe('BoardsService', () => {
       expect(prisma.board.findMany).toHaveBeenCalledWith({
         where: {
           ownerId: 'user-1',
+        },
+        include: {
+          sections: {
+            orderBy: {
+              position: 'asc',
+            },
+          },
         },
         orderBy: {
           updatedAt: 'desc',

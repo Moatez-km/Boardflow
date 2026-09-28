@@ -6,36 +6,43 @@ export declare class BoardsController {
     constructor(boardsService: BoardsService);
     create(request: any, dto: CreateBoardDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
+        createdAt: Date;
+        updatedAt: Date;
         ownerId: string;
     }>;
-    findAll(request: any, search?: string): Promise<{
+    findAll(request: any, search?: string): Promise<({
+        sections: {
+            id: string;
+            title: string;
+            position: import("@prisma/client/runtime/library").Decimal;
+            boardId: string;
+        }[];
+    } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
+        createdAt: Date;
+        updatedAt: Date;
         ownerId: string;
-    }[]>;
+    })[]>;
     findOne(boardId: string, request: Request & {
         user: {
             id: string;
         };
     }): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
+        createdAt: Date;
+        updatedAt: Date;
         ownerId: string;
     }>;
     update(boardId: string, request: Request & {
@@ -44,12 +51,12 @@ export declare class BoardsController {
         };
     }, dto: UpdateBoardDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         title: string;
         description: string | null;
         visibility: import("@prisma/client").$Enums.BoardVisibility;
         viewType: import("@prisma/client").$Enums.ViewType;
+        createdAt: Date;
+        updatedAt: Date;
         ownerId: string;
     }>;
     remove(boardId: string, request: Request & {

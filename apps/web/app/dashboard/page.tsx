@@ -12,7 +12,13 @@ type Board = {
     description?: string | null;
     viewType: string;
     visibility: string;
+    sections: Section[];
     updatedAt: string;
+};
+type Section = {
+    id: string;
+    title: string;
+    position: number | string;
 };
 
 export default function DashboardPage({
@@ -23,10 +29,39 @@ export default function DashboardPage({
     const router = useRouter();
     const { user, isLoading } = useAuth();
 
-    const [boards, setBoards] = useState<Board[]>(initialBoards);
+    const [boards, setBoards] = useState<Board[]>(
+        (initialBoards ?? []).map((board) => ({
+            ...board,
+            sections: board.sections ?? [],
+        }))
+    );
     const [boardsLoading, setBoardsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState('');
+
+    function handleSectionCreated(
+        boardId: string,
+        updatedSections: Section[]
+    ) {
+        setBoards((currentBoards) =>
+            currentBoards.map((board) =>
+                board.id === boardId
+                    ? {
+                        ...board,
+                        sections: [...updatedSections].sort(
+                            (a, b) => Number(a.position) - Number(b.position)
+                        ),
+                    }
+                    : board
+            )
+        );
+    }
+
+
+
+
+
+
 
     const handleBoardDeleted = (deletedBoardId: string) => {
         setBoards((previousBoards) =>
@@ -81,7 +116,17 @@ export default function DashboardPage({
                     );
                 }
 
-                setBoards(data);
+                const normalizedBoards: Board[] = data.map(
+                    (board: Board) => ({
+                        ...board,
+                        sections: Array.isArray(board.sections)
+                            ? board.sections
+                            : [],
+                    })
+                );
+
+                setBoards(normalizedBoards);
+
             } catch (error) {
                 console.error('Failed to load boards:', error);
 
@@ -182,6 +227,7 @@ export default function DashboardPage({
                                         key={board.id}
                                         board={board}
                                         onDeleted={handleBoardDeleted}
+                                        onSectionCreated={handleSectionCreated}
                                     />
                                 ))}
                             </div>

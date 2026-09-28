@@ -39,6 +39,13 @@ export class BoardsService {
                     }
                     : {}),
             },
+            include: {
+                sections: {
+                    orderBy: {
+                        position: 'asc',
+                    },
+                },
+            },
             orderBy: {
                 updatedAt: 'desc',
             },
