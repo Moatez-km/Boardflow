@@ -41,6 +41,10 @@ export function BoardCard({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const sections = board.sections ?? [];
 
+    const handleOpenBoard = () => {
+        router.push(`/boards/${board.id}`);
+    };
+
     {/*Create Section to the Board Card */ }
     async function handleCreateSection(
         event: React.FormEvent<HTMLFormElement>
@@ -341,7 +345,7 @@ export function BoardCard({
 
                 <button
                     type="button"
-                    onClick={() => router.push(`/boards/${board.id}`)}
+                    onClick={handleOpenBoard}
                     className="rounded-lg bg-black px-3 py-2 text-xs font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500"
                 >
                     Open board
