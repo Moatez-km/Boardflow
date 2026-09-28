@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 type Board = {
     id: string;
@@ -69,12 +70,40 @@ export function BoardCard({
     return (
         <article className="group flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow-md">
             <div>
-                <h2 className="text-base font-semibold text-slate-800 transition group-hover:text-blue-600">
-                    {board.title}
-                </h2>
+                {/* Title and action buttons */}
+                <div className="flex items-start justify-between gap-3">
+                    <h2 className="min-w-0 truncate text-base font-semibold text-slate-800 transition group-hover:text-blue-600">
+                        {board.title}
+                    </h2>
+
+                    <div className="flex shrink-0 items-center gap-1">
+                        <button
+                            type="button"
+                            onClick={() =>
+                                router.push(`/boards/${board.id}/edit`)
+                            }
+                            aria-label={`Edit ${board.title}`}
+                            title="Edit board"
+                            className="rounded-md p-1.5 text-slate-500 transition hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <Pencil className="h-4 w-4" />
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                            aria-label={`Delete ${board.title}`}
+                            title={isDeleting ? 'Deleting...' : 'Delete board'}
+                            className="rounded-md p-1.5 text-slate-500 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
 
                 {board.description ? (
-                    <p className="mt-2 text-sm text-slate-600 line-clamp-2">
+                    <p className="mt-2 line-clamp-2 text-sm text-slate-600">
                         {board.description}
                     </p>
                 ) : (
@@ -89,6 +118,7 @@ export function BoardCard({
                     <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
                         {board.viewType}
                     </span>
+
                     <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 font-medium text-blue-700">
                         {board.visibility}
                     </span>
@@ -99,25 +129,6 @@ export function BoardCard({
                         {error}
                     </p>
                 )}
-
-                <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3">
-                    <button
-                        type="button"
-                        onClick={() => router.push(`/boards/${board.id}/edit`)}
-                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900"
-                    >
-                        Edit
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                    </button>
-                </div>
             </div>
         </article>
     );
