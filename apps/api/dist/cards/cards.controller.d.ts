@@ -18,20 +18,20 @@ export declare class CardsController {
         }[];
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: import("@prisma/client/runtime/library").JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: import("@prisma/client/runtime/library").Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: import("@prisma/client/runtime/library").Decimal | null;
         longitude: import("@prisma/client/runtime/library").Decimal | null;
-        position: import("@prisma/client/runtime/library").Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     })[]>;
     create(request: any, boardId: string, dto: CreateCardDto): Promise<{
@@ -47,20 +47,20 @@ export declare class CardsController {
         }[];
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: import("@prisma/client/runtime/library").JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: import("@prisma/client/runtime/library").Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: import("@prisma/client/runtime/library").Decimal | null;
         longitude: import("@prisma/client/runtime/library").Decimal | null;
-        position: import("@prisma/client/runtime/library").Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     }>;
     update(request: any, cardId: string, dto: UpdateCardDto): Promise<{
@@ -76,20 +76,20 @@ export declare class CardsController {
         }[];
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: import("@prisma/client/runtime/library").JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: import("@prisma/client/runtime/library").Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: import("@prisma/client/runtime/library").Decimal | null;
         longitude: import("@prisma/client/runtime/library").Decimal | null;
-        position: import("@prisma/client/runtime/library").Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     }>;
     remove(request: any, cardId: string): Promise<{
@@ -98,20 +98,20 @@ export declare class CardsController {
     }>;
     reorder(request: any, cardId: string, dto: ReorderCardDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: import("@prisma/client/runtime/library").JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: import("@prisma/client/runtime/library").Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: import("@prisma/client/runtime/library").Decimal | null;
         longitude: import("@prisma/client/runtime/library").Decimal | null;
-        position: import("@prisma/client/runtime/library").Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     }>;
 }

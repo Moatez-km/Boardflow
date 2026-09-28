@@ -120,7 +120,10 @@ export class CardsService {
                 boardId,
                 sectionId: dto.sectionId ?? null,
                 title: dto.title,
-                content: JSON.stringify(dto.content),
+                content:
+                    dto.content === undefined
+                        ? undefined
+                        : (dto.content as Prisma.InputJsonValue),
                 type: dto.type ?? 'TEXT',
                 position,
                 createdById: userId,
@@ -207,7 +210,12 @@ export class CardsService {
             },
             data: {
                 title: dto.title,
-                content: JSON.stringify(dto.content),
+                content:
+                    dto.content === undefined
+                        ? undefined
+                        : dto.content === null
+                        ? Prisma.DbNull
+                        : (dto.content as Prisma.InputJsonValue),
                 type: dto.type,
                 sectionId: dto.sectionId,
                 x: dto.x,

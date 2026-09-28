@@ -21,20 +21,20 @@ export declare class CardsService {
         }[];
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: Prisma.JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: Prisma.Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: Prisma.Decimal | null;
         longitude: Prisma.Decimal | null;
-        position: Prisma.Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     }>;
     findAll(userId: string, boardId: string): Promise<({
@@ -50,20 +50,20 @@ export declare class CardsService {
         }[];
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: Prisma.JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: Prisma.Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: Prisma.Decimal | null;
         longitude: Prisma.Decimal | null;
-        position: Prisma.Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     })[]>;
     private getCardOrFail;
@@ -80,20 +80,20 @@ export declare class CardsService {
         }[];
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: Prisma.JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: Prisma.Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: Prisma.Decimal | null;
         longitude: Prisma.Decimal | null;
-        position: Prisma.Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     }>;
     remove(userId: string, cardId: string): Promise<{
@@ -102,20 +102,20 @@ export declare class CardsService {
     }>;
     reorder(userId: string, cardId: string, dto: ReorderCardDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        y: number | null;
         title: string;
         content: Prisma.JsonValue | null;
         type: import("@prisma/client").$Enums.CardType;
-        sectionId: string | null;
+        position: Prisma.Decimal;
+        x: number | null;
+        y: number | null;
         startAt: Date | null;
         endAt: Date | null;
-        x: number | null;
         latitude: Prisma.Decimal | null;
         longitude: Prisma.Decimal | null;
-        position: Prisma.Decimal;
+        createdAt: Date;
+        updatedAt: Date;
         boardId: string;
+        sectionId: string | null;
         createdById: string;
     }>;
 }

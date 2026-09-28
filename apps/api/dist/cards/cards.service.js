@@ -9,6 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { ForbiddenException, Injectable, NotFoundException, BadRequestException, } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '@prisma/client';
 let CardsService = class CardsService {
     prisma;
     constructor(prisma) {
@@ -77,7 +78,9 @@ let CardsService = class CardsService {
                 boardId,
                 sectionId: dto.sectionId ?? null,
                 title: dto.title,
-                content: JSON.stringify(dto.content),
+                content: dto.content === undefined
+                    ? undefined
+                    : dto.content,
                 type: dto.type ?? 'TEXT',
                 position,
                 createdById: userId,
@@ -146,7 +149,11 @@ let CardsService = class CardsService {
             },
             data: {
                 title: dto.title,
-                content: JSON.stringify(dto.content),
+                content: dto.content === undefined
+                    ? undefined
+                    : dto.content === null
+                        ? Prisma.DbNull
+                        : dto.content,
                 type: dto.type,
                 sectionId: dto.sectionId,
                 x: dto.x,

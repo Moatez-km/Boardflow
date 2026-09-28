@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/components/auth-provider";
 import Sidebar from "@/src/components/dashbord/SideBar";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Pencil, Trash2 } from "lucide-react";
+
 import CreateCardModal from "@/src/components/board/CreateCardModal";
 
 
@@ -54,6 +55,60 @@ export default function BoardDetails({
     const [cards, setCards] = useState<Card[]>([]);
     const [selectedSection, setSelectedSection] =
         useState<Section | null>(null);
+
+    const [editingCard, setEditingCard] = useState<Card | null>(null);
+    const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
+    const [cardActionError, setCardActionError] = useState<string | null>(null);
+
+    async function handleDeleteCard(cardId: string) {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this card?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            setDeletingCardId(cardId);
+            setCardActionError(null);
+
+            const response = await fetch(
+                `http://localhost:3001/api/cards/${cardId}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                throw new Error(data?.message || "Failed to delete card");
+            }
+
+            setCards((currentCards) =>
+                currentCards.filter((card) => card.id !== cardId)
+            );
+        } catch (err) {
+            setCardActionError(
+                err instanceof Error
+                    ? err.message
+                    : "Could not delete card"
+            );
+        } finally {
+            setDeletingCardId(null);
+        }
+    }
+
+    function handleCardUpdated(updatedCard: Card) {
+        setCards((currentCards) =>
+            currentCards.map((card) =>
+                card.id === updatedCard.id ? updatedCard : card
+            )
+        );
+
+        setEditingCard(null);
+    }
+
     useEffect(() => {
         if (!authLoading && !user) {
             router.replace("/login");
@@ -330,6 +385,9 @@ export default function BoardDetails({
                                     (card) => card.sectionId === section.id
                                 )}
                                 onAddCard={() => setSelectedSection(section)}
+                                onEditCard={(card) => setEditingCard(card)}
+                                onDeleteCard={handleDeleteCard}
+                                deletingCardId={deletingCardId}
                             />
                         ))
                     ) : (
@@ -351,23 +409,65 @@ export default function BoardDetails({
                                 ...currentCards,
                                 newCard,
                             ]);
+
+                            setSelectedSection(null);
                         }}
                     />
                 )}
+
+                {editingCard && (
+                    <CreateCardModal
+                        boardId={boardId}
+                        sectionId={editingCard.sectionId ?? ""}
+                        sectionTitle="Edit card"
+                        card={editingCard}
+                        onClose={() => setEditingCard(null)}
+                        onUpdated={handleCardUpdated}
+                    />
+                )}
+
 
             </main>
         </div>
     );
 }
 
+function formatCardContent(raw: unknown): string {
+    if (!raw) return "";
+    let str = typeof raw === "string" ? raw : JSON.stringify(raw);
+    while (
+        typeof str === "string" &&
+        ((str.startsWith('"') && str.endsWith('"')) ||
+            (str.startsWith('\\"') && str.endsWith('\\"')))
+    ) {
+        try {
+            const parsed = JSON.parse(str);
+            if (typeof parsed === "string") {
+                str = parsed;
+            } else {
+                break;
+            }
+        } catch {
+            break;
+        }
+    }
+    return str;
+}
+
 function SectionColumn({
     section,
     cards,
     onAddCard,
+    onEditCard,
+    onDeleteCard,
+    deletingCardId,
 }: {
     section: Section;
     cards: Card[];
     onAddCard: () => void;
+    onEditCard: (card: Card) => void;
+    onDeleteCard: (cardId: string) => void;
+    deletingCardId: string | null;
 }) {
     return (
         <div className="w-72 shrink-0 rounded-xl bg-slate-100 p-4">
@@ -385,27 +485,49 @@ function SectionColumn({
             </div>
 
             <div className="min-h-56 space-y-3">
-                {cards.length > 0 ? (
-                    cards.map((card) => (
-                        <div
-                            key={card.id}
-                            className="rounded-lg bg-white p-3 shadow-sm"
-                        >
-                            <p className="text-sm font-medium text-slate-800">
-                                {card.title}
-                            </p>
-                            <p className="mt-1 text-xs text-slate-500">
-                                {card.content}
-                            </p>
+                {cards.map((card) => (
+                    <div
+                        key={card.id}
+                        className="rounded-lg bg-white p-3 shadow-sm"
+                    >
+                        <div className="flex items-start justify-between gap-2">
+                            <div>
+                                <p className="text-sm font-medium text-slate-800">
+                                    {card.title}
+                                </p>
+
+                                {card.content ? (
+                                    <p className="mt-1 text-xs text-slate-500 whitespace-pre-wrap">
+                                        {formatCardContent(card.content)}
+                                    </p>
+                                ) : null}
+                            </div>
+
+                            <div className="flex shrink-0 gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => onEditCard(card)}
+                                    className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
+                                    title="Edit card"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => onDeleteCard(card.id)}
+                                    disabled={deletingCardId === card.id}
+                                    className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                    title="Delete card"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
                         </div>
-                    ))
-                ) : (
-                    <div className="flex min-h-40 items-center justify-center rounded-lg border border-dashed border-slate-300">
-                        <p className="text-xs text-slate-400">
-                            No cards yet
-                        </p>
+
                     </div>
-                )}
+
+                ))}
             </div>
 
             <button
