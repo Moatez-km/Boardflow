@@ -97,7 +97,7 @@ export interface GooeyInputProps {
 }
 
 export function GooeyInput({
-  placeholder = "Type to search...",
+  placeholder = "Search your Board...",
   className,
   classNames,
   collapsedWidth = 115,
