@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/components/auth-provider";
 import Sidebar from "@/src/components/dashbord/SideBar";
 import { Plus, X } from "lucide-react";
+import CreateCardModal from "@/src/components/board/CreateCardModal";
+
 
 type Board = {
     id: string;
@@ -18,11 +20,21 @@ type Section = {
     id: string;
     title: string;
     position: number | string;
+    cards?: Card[];
 };
 
 type BoardDetailsProps = {
     boardId: string;
 };
+type Card = {
+    id: string;
+    title: string;
+    content?: string | null;
+    type: string;
+    sectionId: string | null;
+    position: number | string;
+};
+
 
 export default function BoardDetails({
     boardId,
@@ -39,7 +51,9 @@ export default function BoardDetails({
     const [sectionTitle, setSectionTitle] = useState("");
     const [isSubmittingSection, setIsSubmittingSection] = useState(false);
     const [sectionError, setSectionError] = useState<string | null>(null);
-
+    const [cards, setCards] = useState<Card[]>([]);
+    const [selectedSection, setSelectedSection] =
+        useState<Section | null>(null);
     useEffect(() => {
         if (!authLoading && !user) {
             router.replace("/login");
@@ -54,7 +68,7 @@ export default function BoardDetails({
                 setLoading(true);
                 setError(null);
 
-                const [boardResponse, sectionsResponse] = await Promise.all([
+                const [boardResponse, sectionsResponse, cardsResponse] = await Promise.all([
                     fetch(`http://localhost:3001/api/boards/${boardId}`, {
                         credentials: "include",
                     }),
@@ -65,17 +79,26 @@ export default function BoardDetails({
                             credentials: "include",
                         }
                     ),
+                    fetch(
+                        `http://localhost:3001/api/boards/${boardId}/cards`,
+                        {
+                            credentials: "include",
+                        }),
                 ]);
 
                 const boardData = await boardResponse.json();
                 const sectionsData = await sectionsResponse.json();
-
+                const cardsData = await cardsResponse.json();
                 if (!boardResponse.ok) {
                     throw new Error(
                         boardData?.message || "Failed to fetch board"
                     );
                 }
-
+                if (!cardsResponse.ok) {
+                    throw new Error(
+                        cardsData?.message || "Failed to fetch cards"
+                    );
+                }
                 if (!sectionsResponse.ok) {
                     throw new Error(
                         sectionsData?.message || "Failed to fetch sections"
@@ -85,13 +108,16 @@ export default function BoardDetails({
                 const fetchedSections: Section[] = Array.isArray(sectionsData)
                     ? sectionsData
                     : sectionsData?.sections ?? sectionsData?.data ?? [];
-
+                const fetchedCards: Card[] = Array.isArray(cardsData)
+                    ? cardsData
+                    : cardsData?.cards ?? cardsData?.data ?? [];
                 setBoard(boardData);
                 setSections(
                     fetchedSections.sort(
                         (a, b) => Number(a.position) - Number(b.position)
                     )
                 );
+                setCards(fetchedCards);
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -300,6 +326,10 @@ export default function BoardDetails({
                             <SectionColumn
                                 key={section.id}
                                 section={section}
+                                cards={cards.filter(
+                                    (card) => card.sectionId === section.id
+                                )}
+                                onAddCard={() => setSelectedSection(section)}
                             />
                         ))
                     ) : (
@@ -310,6 +340,20 @@ export default function BoardDetails({
                         </div>
                     )}
                 </div>
+                {selectedSection && (
+                    <CreateCardModal
+                        boardId={boardId}
+                        sectionId={selectedSection.id}
+                        sectionTitle={selectedSection.title}
+                        onClose={() => setSelectedSection(null)}
+                        onCreated={(newCard) => {
+                            setCards((currentCards) => [
+                                ...currentCards,
+                                newCard,
+                            ]);
+                        }}
+                    />
+                )}
 
             </main>
         </div>
@@ -318,8 +362,12 @@ export default function BoardDetails({
 
 function SectionColumn({
     section,
+    cards,
+    onAddCard,
 }: {
     section: Section;
+    cards: Card[];
+    onAddCard: () => void;
 }) {
     return (
         <div className="w-72 shrink-0 rounded-xl bg-slate-100 p-4">
@@ -336,17 +384,34 @@ function SectionColumn({
                 </button>
             </div>
 
-            {/* Cards are intentionally not implemented yet */}
-            <div className="flex min-h-56 items-center justify-center rounded-lg border border-dashed border-slate-300">
-                <p className="text-xs text-slate-400">
-                    No cards yet
-                </p>
+            <div className="min-h-56 space-y-3">
+                {cards.length > 0 ? (
+                    cards.map((card) => (
+                        <div
+                            key={card.id}
+                            className="rounded-lg bg-white p-3 shadow-sm"
+                        >
+                            <p className="text-sm font-medium text-slate-800">
+                                {card.title}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">
+                                {card.content}
+                            </p>
+                        </div>
+                    ))
+                ) : (
+                    <div className="flex min-h-40 items-center justify-center rounded-lg border border-dashed border-slate-300">
+                        <p className="text-xs text-slate-400">
+                            No cards yet
+                        </p>
+                    </div>
+                )}
             </div>
 
             <button
                 type="button"
-                disabled
-                className="mt-4 w-full rounded-lg bg-blue-100 py-2 text-sm text-blue-600 disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={onAddCard}
+                className="mt-4 w-full rounded-lg bg-blue-100 py-2 text-sm text-blue-600 hover:bg-blue-200"
             >
                 + Add card
             </button>
