@@ -8,7 +8,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { Injectable } from '@nestjs/common';
-import { PutObjectCommand, S3Client, } from '@aws-sdk/client-s3';
+import { PutObjectCommand, S3Client, HeadObjectCommand, } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 let StorageService = class StorageService {
     s3;
@@ -33,6 +33,12 @@ let StorageService = class StorageService {
         return getSignedUrl(this.s3, command, {
             expiresIn: 60 * 5,
         });
+    }
+    async headObject(storageKey) {
+        return this.s3.send(new HeadObjectCommand({
+            Bucket: this.bucket,
+            Key: storageKey,
+        }));
     }
 };
 StorageService = __decorate([

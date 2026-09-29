@@ -7,6 +7,7 @@ import {
 
 import { FilesService } from './files.service.js';
 import { PresignUploadDto } from './dto/presign-upload.dto.js';
+import { CompleteUploadDto } from './dto/complete-upload.dto.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import { UseGuards } from '@nestjs/common';
 
@@ -23,6 +24,16 @@ export class FilesController {
         @Body() dto: PresignUploadDto,
     ) {
         return this.filesService.presign(
+            request.user.id,
+            dto,
+        );
+    }
+    @Post('complete')
+    async complete(
+        @Req() request: any,
+        @Body() dto: CompleteUploadDto,
+    ) {
+        return this.filesService.complete(
             request.user.id,
             dto,
         );

@@ -14,6 +14,7 @@ import {
 } from './file.constants.js';
 
 import { generateStorageKey } from './storage-key.js';
+import { CompleteUploadDto } from './dto/complete-upload.dto.js';
 
 @Injectable()
 export class FilesService {
@@ -84,6 +85,104 @@ export class FilesService {
             uploadUrl,
             storageKey,
             expiresIn: 300,
+        };
+    }
+    async complete(
+        userId: string,
+        dto: CompleteUploadDto,
+    ) {
+        // 1. Find card
+        const card =
+            await this.prisma.card.findUnique({
+                where: {
+                    id: dto.cardId,
+                },
+                include: {
+                    board: true,
+                },
+            });
+
+        if (!card) {
+            throw new NotFoundException(
+                'Card not found',
+            );
+        }
+
+        // 2. Authorization
+        if (card.board.ownerId !== userId) {
+            throw new BadRequestException(
+                'You cannot upload to this card',
+            );
+        }
+
+        // 3. Make sure storage key belongs
+        //    to this user/card
+        const expectedPrefix =
+            `attachments/${userId}/${dto.cardId}/`;
+
+        if (!dto.storageKey.startsWith(expectedPrefix)) {
+            throw new BadRequestException(
+                'Invalid storage key',
+            );
+        }
+
+        // 4. Verify object actually exists
+        const object =
+            await this.storage.headObject(
+                dto.storageKey,
+            );
+
+        // 5. Verify actual size
+        if (
+            !object.ContentLength ||
+            object.ContentLength > MAX_FILE_SIZE
+        ) {
+            throw new BadRequestException(
+                'Invalid uploaded file size',
+            );
+        }
+
+        // 6. Verify MIME
+        if (
+            object.ContentType &&
+            !ALLOWED_MIME_TYPES.has(
+                object.ContentType,
+            )
+        ) {
+            throw new BadRequestException(
+                'Invalid uploaded file type',
+            );
+        }
+
+        // 7. Create DB record
+        const attachment =
+            await this.prisma.attachment.create({
+                data: {
+                    cardId: dto.cardId,
+
+                    storageKey: dto.storageKey,
+
+                    filename: dto.filename,
+
+                    mimeType:
+                        object.ContentType ??
+                        dto.mimeType,
+
+                    size: BigInt(
+                        object.ContentLength,
+                    ),
+
+                    uploadedById: userId,
+                },
+            });
+
+        return {
+            id: attachment.id,
+            cardId: attachment.cardId,
+            filename: attachment.filename,
+            mimeType: attachment.mimeType,
+            size: attachment.size.toString(),
+            createdAt: attachment.createdAt,
         };
     }
 }

@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 import { Body, Controller, Post, Req, } from '@nestjs/common';
 import { FilesService } from './files.service.js';
 import { PresignUploadDto } from './dto/presign-upload.dto.js';
+import { CompleteUploadDto } from './dto/complete-upload.dto.js';
 import { AuthGuard } from '../auth/auth.guard.js';
 import { UseGuards } from '@nestjs/common';
 let FilesController = class FilesController {
@@ -23,6 +24,9 @@ let FilesController = class FilesController {
     async presign(request, dto) {
         return this.filesService.presign(request.user.id, dto);
     }
+    async complete(request, dto) {
+        return this.filesService.complete(request.user.id, dto);
+    }
 };
 __decorate([
     Post('presign'),
@@ -32,6 +36,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, PresignUploadDto]),
     __metadata("design:returntype", Promise)
 ], FilesController.prototype, "presign", null);
+__decorate([
+    Post('complete'),
+    __param(0, Req()),
+    __param(1, Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, CompleteUploadDto]),
+    __metadata("design:returntype", Promise)
+], FilesController.prototype, "complete", null);
 FilesController = __decorate([
     Controller('files'),
     UseGuards(AuthGuard),

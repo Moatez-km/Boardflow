@@ -48,6 +48,54 @@ let FilesService = class FilesService {
             expiresIn: 300,
         };
     }
+    async complete(userId, dto) {
+        const card = await this.prisma.card.findUnique({
+            where: {
+                id: dto.cardId,
+            },
+            include: {
+                board: true,
+            },
+        });
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        if (card.board.ownerId !== userId) {
+            throw new BadRequestException('You cannot upload to this card');
+        }
+        const expectedPrefix = `attachments/${userId}/${dto.cardId}/`;
+        if (!dto.storageKey.startsWith(expectedPrefix)) {
+            throw new BadRequestException('Invalid storage key');
+        }
+        const object = await this.storage.headObject(dto.storageKey);
+        if (!object.ContentLength ||
+            object.ContentLength > MAX_FILE_SIZE) {
+            throw new BadRequestException('Invalid uploaded file size');
+        }
+        if (object.ContentType &&
+            !ALLOWED_MIME_TYPES.has(object.ContentType)) {
+            throw new BadRequestException('Invalid uploaded file type');
+        }
+        const attachment = await this.prisma.attachment.create({
+            data: {
+                cardId: dto.cardId,
+                storageKey: dto.storageKey,
+                filename: dto.filename,
+                mimeType: object.ContentType ??
+                    dto.mimeType,
+                size: BigInt(object.ContentLength),
+                uploadedById: userId,
+            },
+        });
+        return {
+            id: attachment.id,
+            cardId: attachment.cardId,
+            filename: attachment.filename,
+            mimeType: attachment.mimeType,
+            size: attachment.size.toString(),
+            createdAt: attachment.createdAt,
+        };
+    }
 };
 FilesService = __decorate([
     Injectable(),
