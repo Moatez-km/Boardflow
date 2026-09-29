@@ -13,10 +13,10 @@ export declare class CardsService {
             id: string;
             createdAt: Date;
             cardId: string;
-            storageKey: string;
             filename: string;
             mimeType: string;
-            size: number;
+            size: bigint;
+            storageKey: string;
             uploadedById: string;
         }[];
     } & {
@@ -42,10 +42,10 @@ export declare class CardsService {
             id: string;
             createdAt: Date;
             cardId: string;
-            storageKey: string;
             filename: string;
             mimeType: string;
-            size: number;
+            size: bigint;
+            storageKey: string;
             uploadedById: string;
         }[];
     } & {
@@ -72,10 +72,10 @@ export declare class CardsService {
             id: string;
             createdAt: Date;
             cardId: string;
-            storageKey: string;
             filename: string;
             mimeType: string;
-            size: number;
+            size: bigint;
+            storageKey: string;
             uploadedById: string;
         }[];
     } & {

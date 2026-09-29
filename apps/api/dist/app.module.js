@@ -12,11 +12,12 @@ import { AuthModule } from './auth/auth.module.js';
 import { BoardsModule } from './boards/boards.module.js';
 import { CardsModule } from './cards/cards.module.js';
 import { SectionsModule } from './sections/sections.module.js';
+import { FilesModule } from './files/files.module.js';
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     Module({
-        imports: [PrismaModule, AuthModule, BoardsModule, CardsModule, SectionsModule],
+        imports: [PrismaModule, AuthModule, BoardsModule, CardsModule, SectionsModule, FilesModule],
         controllers: [AppController],
         providers: [AppService],
     })

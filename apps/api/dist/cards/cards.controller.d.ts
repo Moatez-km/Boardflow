@@ -10,10 +10,10 @@ export declare class CardsController {
             id: string;
             createdAt: Date;
             cardId: string;
-            storageKey: string;
             filename: string;
             mimeType: string;
-            size: number;
+            size: bigint;
+            storageKey: string;
             uploadedById: string;
         }[];
     } & {
@@ -39,10 +39,10 @@ export declare class CardsController {
             id: string;
             createdAt: Date;
             cardId: string;
-            storageKey: string;
             filename: string;
             mimeType: string;
-            size: number;
+            size: bigint;
+            storageKey: string;
             uploadedById: string;
         }[];
     } & {
@@ -68,10 +68,10 @@ export declare class CardsController {
             id: string;
             createdAt: Date;
             cardId: string;
-            storageKey: string;
             filename: string;
             mimeType: string;
-            size: number;
+            size: bigint;
+            storageKey: string;
             uploadedById: string;
         }[];
     } & {
