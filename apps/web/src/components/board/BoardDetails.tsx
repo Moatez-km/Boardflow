@@ -4,10 +4,29 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/components/auth-provider";
 import Sidebar from "@/src/components/dashbord/SideBar";
-import { Plus, X, Pencil, Trash2 } from "lucide-react";
-
+import { Plus, X, Pencil, Trash2, GripVertical } from "lucide-react";
 import CreateCardModal from "@/src/components/board/CreateCardModal";
 
+import {
+    DndContext,
+    DragOverlay,
+    closestCorners,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    useDroppable,
+    type DragStartEvent,
+    type DragOverEvent,
+    type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type Board = {
     id: string;
@@ -27,6 +46,7 @@ type Section = {
 type BoardDetailsProps = {
     boardId: string;
 };
+
 type Card = {
     id: string;
     title: string;
@@ -36,10 +56,7 @@ type Card = {
     position: number | string;
 };
 
-
-export default function BoardDetails({
-    boardId,
-}: BoardDetailsProps) {
+export default function BoardDetails({ boardId }: BoardDetailsProps) {
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
 
@@ -53,12 +70,23 @@ export default function BoardDetails({
     const [isSubmittingSection, setIsSubmittingSection] = useState(false);
     const [sectionError, setSectionError] = useState<string | null>(null);
     const [cards, setCards] = useState<Card[]>([]);
-    const [selectedSection, setSelectedSection] =
-        useState<Section | null>(null);
+    const [selectedSection, setSelectedSection] = useState<Section | null>(null);
 
     const [editingCard, setEditingCard] = useState<Card | null>(null);
     const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
     const [cardActionError, setCardActionError] = useState<string | null>(null);
+    const [activeCard, setActiveCard] = useState<Card | null>(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     async function handleDeleteCard(cardId: string) {
         const confirmed = window.confirm(
@@ -90,9 +118,7 @@ export default function BoardDetails({
             );
         } catch (err) {
             setCardActionError(
-                err instanceof Error
-                    ? err.message
-                    : "Could not delete card"
+                err instanceof Error ? err.message : "Could not delete card"
             );
         } finally {
             setDeletingCardId(null);
@@ -123,27 +149,29 @@ export default function BoardDetails({
                 setLoading(true);
                 setError(null);
 
-                const [boardResponse, sectionsResponse, cardsResponse] = await Promise.all([
-                    fetch(`http://localhost:3001/api/boards/${boardId}`, {
-                        credentials: "include",
-                    }),
-
-                    fetch(
-                        `http://localhost:3001/api/boards/${boardId}/sections`,
-                        {
-                            credentials: "include",
-                        }
-                    ),
-                    fetch(
-                        `http://localhost:3001/api/boards/${boardId}/cards`,
-                        {
+                const [boardResponse, sectionsResponse, cardsResponse] =
+                    await Promise.all([
+                        fetch(`http://localhost:3001/api/boards/${boardId}`, {
                             credentials: "include",
                         }),
-                ]);
+                        fetch(
+                            `http://localhost:3001/api/boards/${boardId}/sections`,
+                            {
+                                credentials: "include",
+                            }
+                        ),
+                        fetch(
+                            `http://localhost:3001/api/boards/${boardId}/cards`,
+                            {
+                                credentials: "include",
+                            }
+                        ),
+                    ]);
 
                 const boardData = await boardResponse.json();
                 const sectionsData = await sectionsResponse.json();
                 const cardsData = await cardsResponse.json();
+
                 if (!boardResponse.ok) {
                     throw new Error(
                         boardData?.message || "Failed to fetch board"
@@ -166,13 +194,18 @@ export default function BoardDetails({
                 const fetchedCards: Card[] = Array.isArray(cardsData)
                     ? cardsData
                     : cardsData?.cards ?? cardsData?.data ?? [];
+
                 setBoard(boardData);
                 setSections(
                     fetchedSections.sort(
                         (a, b) => Number(a.position) - Number(b.position)
                     )
                 );
-                setCards(fetchedCards);
+                setCards(
+                    fetchedCards.sort(
+                        (a, b) => Number(a.position) - Number(b.position)
+                    )
+                );
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -224,7 +257,6 @@ export default function BoardDetails({
                 throw new Error(data?.message || "Failed to create section");
             }
 
-            // Refresh sections
             const sectionsRes = await fetch(
                 `http://localhost:3001/api/boards/${boardId}/sections`,
                 { credentials: "include" }
@@ -250,6 +282,144 @@ export default function BoardDetails({
             );
         } finally {
             setIsSubmittingSection(false);
+        }
+    }
+
+    function handleDragStart(event: DragStartEvent) {
+        const { active } = event;
+        const foundCard = cards.find((c) => c.id === active.id);
+        if (foundCard) {
+            setActiveCard(foundCard);
+        }
+    }
+
+    function handleDragOver(event: DragOverEvent) {
+        const { active, over } = event;
+        if (!over) return;
+
+        const activeId = String(active.id);
+        const overId = String(over.id);
+
+        if (activeId === overId) return;
+
+        const currentCard = cards.find((c) => c.id === activeId);
+        if (!currentCard) return;
+
+        const overSection = sections.find((s) => s.id === overId);
+        const overCard = cards.find((c) => c.id === overId);
+
+        const targetSectionId = overSection
+            ? overSection.id
+            : overCard?.sectionId ?? null;
+
+        if (targetSectionId && currentCard.sectionId !== targetSectionId) {
+            setCards((prevCards) =>
+                prevCards.map((c) =>
+                    c.id === activeId
+                        ? { ...c, sectionId: targetSectionId }
+                        : c
+                )
+            );
+        }
+    }
+
+    async function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        setActiveCard(null);
+
+        if (!over) return;
+
+        const activeId = String(active.id);
+        const overId = String(over.id);
+
+        const draggedCard = cards.find((c) => c.id === activeId);
+        if (!draggedCard) return;
+
+        const overSection = sections.find((s) => s.id === overId);
+        const overCard = cards.find((c) => c.id === overId);
+
+        const targetSectionId = overSection
+            ? overSection.id
+            : overCard?.sectionId ?? null;
+
+        if (!targetSectionId) return;
+
+        const sectionCards = cards
+            .filter(
+                (c) => c.sectionId === targetSectionId && c.id !== activeId
+            )
+            .sort((a, b) => Number(a.position) - Number(b.position));
+
+        let newPosition: number;
+
+        if (overSection) {
+            const lastCard = sectionCards[sectionCards.length - 1];
+            newPosition = lastCard ? Number(lastCard.position) + 1000 : 1000;
+        } else if (overCard) {
+            const overIndex = sectionCards.findIndex((c) => c.id === overCard.id);
+            if (overIndex === -1) {
+                const lastCard = sectionCards[sectionCards.length - 1];
+                newPosition = lastCard ? Number(lastCard.position) + 1000 : 1000;
+            } else {
+                const prevCard = sectionCards[overIndex - 1];
+                const nextCard = sectionCards[overIndex];
+
+                if (!prevCard) {
+                    newPosition = Number(nextCard.position) / 2;
+                } else {
+                    newPosition =
+                        (Number(prevCard.position) + Number(nextCard.position)) / 2;
+                }
+            }
+        } else {
+            newPosition = Number(draggedCard.position);
+        }
+
+        const previousCards = [...cards];
+
+        // Optimistically update local cards
+        setCards((prevCards) =>
+            prevCards
+                .map((c) =>
+                    c.id === activeId
+                        ? {
+                              ...c,
+                              sectionId: targetSectionId,
+                              position: newPosition,
+                          }
+                        : c
+                )
+                .sort((a, b) => Number(a.position) - Number(b.position))
+        );
+
+        // Sync with API
+        try {
+            setCardActionError(null);
+            const response = await fetch(
+                `http://localhost:3001/api/cards/${activeId}/reorder`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        sectionId: targetSectionId,
+                        position: newPosition,
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => null);
+                throw new Error(data?.message || "Failed to reorder card");
+            }
+        } catch (err) {
+            // Rollback on failure
+            setCards(previousCards);
+            setCardActionError(
+                err instanceof Error ? err.message : "Failed to move card"
+            );
         }
     }
 
@@ -284,9 +454,7 @@ export default function BoardDetails({
             <div className="min-h-screen bg-slate-50">
                 <Sidebar />
                 <main className="min-h-screen p-6 md:ml-64 md:p-8">
-                    <p className="text-sm text-slate-500">
-                        Board not found.
-                    </p>
+                    <p className="text-sm text-slate-500">Board not found.</p>
                 </main>
             </div>
         );
@@ -327,6 +495,12 @@ export default function BoardDetails({
                     </button>
                 </div>
 
+                {cardActionError && (
+                    <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-600">
+                        {cardActionError}
+                    </div>
+                )}
+
                 {/* Inline section creation form */}
                 {isCreatingSection && (
                     <div className="mb-6 max-w-md rounded-xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm">
@@ -354,7 +528,9 @@ export default function BoardDetails({
                                     disabled={isSubmittingSection}
                                     className="rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    {isSubmittingSection ? "Creating..." : "Create section"}
+                                    {isSubmittingSection
+                                        ? "Creating..."
+                                        : "Create section"}
                                 </button>
                                 <button
                                     type="button"
@@ -374,30 +550,55 @@ export default function BoardDetails({
                     </div>
                 )}
 
-                {/* Sections as columns */}
-                <div className="flex items-start gap-5 overflow-x-auto pb-6">
-                    {sections.length > 0 ? (
-                        sections.map((section) => (
-                            <SectionColumn
-                                key={section.id}
-                                section={section}
-                                cards={cards.filter(
-                                    (card) => card.sectionId === section.id
-                                )}
-                                onAddCard={() => setSelectedSection(section)}
-                                onEditCard={(card) => setEditingCard(card)}
-                                onDeleteCard={handleDeleteCard}
-                                deletingCardId={deletingCardId}
-                            />
-                        ))
-                    ) : (
-                        <div className="flex min-h-48 w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-400">
-                            <p className="text-sm">
-                                No sections created yet. Click &ldquo;Create section&rdquo; to add your first column.
-                            </p>
-                        </div>
-                    )}
-                </div>
+                {/* Drag and Drop Sections & Cards */}
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCorners}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                >
+                    <div className="flex items-start gap-5 overflow-x-auto pb-6">
+                        {sections.length > 0 ? (
+                            sections.map((section) => (
+                                <SectionColumn
+                                    key={section.id}
+                                    section={section}
+                                    cards={cards.filter(
+                                        (card) =>
+                                            card.sectionId === section.id
+                                    )}
+                                    onAddCard={() => setSelectedSection(section)}
+                                    onEditCard={(card) => setEditingCard(card)}
+                                    onDeleteCard={handleDeleteCard}
+                                    deletingCardId={deletingCardId}
+                                />
+                            ))
+                        ) : (
+                            <div className="flex min-h-48 w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-400">
+                                <p className="text-sm">
+                                    No sections created yet. Click &ldquo;Create section&rdquo; to add your first column.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <DragOverlay>
+                        {activeCard ? (
+                            <div className="w-72 rounded-lg bg-white p-3 shadow-xl ring-2 ring-blue-500/20 rotate-1">
+                                <p className="text-sm font-medium text-slate-800">
+                                    {activeCard.title}
+                                </p>
+                                {activeCard.content ? (
+                                    <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                                        {formatCardContent(activeCard.content)}
+                                    </p>
+                                ) : null}
+                            </div>
+                        ) : null}
+                    </DragOverlay>
+                </DndContext>
+
                 {selectedSection && (
                     <CreateCardModal
                         boardId={boardId}
@@ -409,7 +610,6 @@ export default function BoardDetails({
                                 ...currentCards,
                                 newCard,
                             ]);
-
                             setSelectedSection(null);
                         }}
                     />
@@ -425,8 +625,6 @@ export default function BoardDetails({
                         onUpdated={handleCardUpdated}
                     />
                 )}
-
-
             </main>
         </div>
     );
@@ -454,6 +652,87 @@ function formatCardContent(raw: unknown): string {
     return str;
 }
 
+function DraggableCardItem({
+    card,
+    onEditCard,
+    onDeleteCard,
+    deletingCardId,
+}: {
+    card: Card;
+    onEditCard: (card: Card) => void;
+    onDeleteCard: (cardId: string) => void;
+    deletingCardId: string | null;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
+        id: card.id,
+        data: {
+            type: "Card",
+            card,
+        },
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            className="group relative rounded-lg border border-slate-200/80 bg-white p-3 shadow-xs transition hover:border-slate-300 hover:shadow-sm cursor-grab active:cursor-grabbing"
+        >
+            <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 pr-1">
+                    <p className="text-sm font-medium text-slate-800 select-none">
+                        {card.title}
+                    </p>
+
+                    {card.content ? (
+                        <p className="mt-1 text-xs text-slate-500 whitespace-pre-wrap select-none">
+                            {formatCardContent(card.content)}
+                        </p>
+                    ) : null}
+                </div>
+
+                <div
+                    className="flex shrink-0 gap-1"
+                    onPointerDown={(e) => e.stopPropagation()}
+                >
+                    <button
+                        type="button"
+                        onClick={() => onEditCard(card)}
+                        className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition"
+                        title="Edit card"
+                    >
+                        <Pencil className="h-3.5 w-3.5" />
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => onDeleteCard(card.id)}
+                        disabled={deletingCardId === card.id}
+                        className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition"
+                        title="Delete card"
+                    >
+                        <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function SectionColumn({
     section,
     cards,
@@ -469,75 +748,64 @@ function SectionColumn({
     onDeleteCard: (cardId: string) => void;
     deletingCardId: string | null;
 }) {
+    const { setNodeRef } = useDroppable({
+        id: section.id,
+        data: {
+            type: "Section",
+            section,
+        },
+    });
+
+    const cardIds = cards.map((c) => c.id);
+
     return (
-        <div className="w-72 shrink-0 rounded-xl bg-slate-100 p-4">
-            <div className="mb-5 flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase text-slate-700">
-                    {section.title}
-                </h2>
+        <div
+            ref={setNodeRef}
+            className="w-72 shrink-0 rounded-xl bg-slate-100/90 p-4 border border-slate-200/60"
+        >
+            <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        {section.title}
+                    </h2>
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                        {cards.length}
+                    </span>
+                </div>
 
                 <button
                     type="button"
-                    className="text-lg text-slate-400 hover:text-slate-700"
+                    className="text-slate-400 hover:text-slate-700 text-sm px-1 rounded"
                 >
                     ⋮
                 </button>
             </div>
 
-            <div className="min-h-56 space-y-3">
-                {cards.map((card) => (
-                    <div
-                        key={card.id}
-                        className="rounded-lg bg-white p-3 shadow-sm"
-                    >
-                        <div className="flex items-start justify-between gap-2">
-                            <div>
-                                <p className="text-sm font-medium text-slate-800">
-                                    {card.title}
-                                </p>
-
-                                {card.content ? (
-                                    <p className="mt-1 text-xs text-slate-500 whitespace-pre-wrap">
-                                        {formatCardContent(card.content)}
-                                    </p>
-                                ) : null}
-                            </div>
-
-                            <div className="flex shrink-0 gap-1">
-                                <button
-                                    type="button"
-                                    onClick={() => onEditCard(card)}
-                                    className="rounded p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
-                                    title="Edit card"
-                                >
-                                    <Pencil className="h-4 w-4" />
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => onDeleteCard(card.id)}
-                                    disabled={deletingCardId === card.id}
-                                    className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                                    title="Delete card"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-
-                ))}
-            </div>
+            <SortableContext
+                items={cardIds}
+                strategy={verticalListSortingStrategy}
+            >
+                <div className="min-h-56 space-y-2.5">
+                    {cards.map((card) => (
+                        <DraggableCardItem
+                            key={card.id}
+                            card={card}
+                            onEditCard={onEditCard}
+                            onDeleteCard={onDeleteCard}
+                            deletingCardId={deletingCardId}
+                        />
+                    ))}
+                </div>
+            </SortableContext>
 
             <button
                 type="button"
                 onClick={onAddCard}
-                className="mt-4 w-full rounded-lg bg-blue-100 py-2 text-sm text-blue-600 hover:bg-blue-200"
+                className="mt-3.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 py-2 text-xs font-medium text-slate-600 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition"
             >
-                + Add card
+                <Plus className="h-3.5 w-3.5" />
+                Add card
             </button>
         </div>
-
     );
 }

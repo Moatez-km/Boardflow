@@ -17,6 +17,7 @@ export declare class SectionsService {
             updatedAt: Date;
             y: number | null;
             title: string;
+            position: import("@prisma/client/runtime/library").Decimal;
             content: import("@prisma/client/runtime/library").JsonValue | null;
             type: import("@prisma/client").$Enums.CardType;
             sectionId: string | null;
@@ -25,7 +26,6 @@ export declare class SectionsService {
             x: number | null;
             latitude: import("@prisma/client/runtime/library").Decimal | null;
             longitude: import("@prisma/client/runtime/library").Decimal | null;
-            position: import("@prisma/client/runtime/library").Decimal;
             boardId: string;
             createdById: string;
         }[];
