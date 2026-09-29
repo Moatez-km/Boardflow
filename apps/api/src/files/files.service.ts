@@ -58,6 +58,7 @@ export class FilesService {
         }
 
         // 4. Authorization
+        //later member/role permission tables.
         if (card.board.ownerId !== userId) {
             throw new BadRequestException(
                 'You cannot upload to this card',
