@@ -42,6 +42,6 @@ next-env.d.ts
 
 
 #not include ai agents files in this project
+AGENTS.md
+CLAUDE.md
 
-apps/web/AGENTS.md
-apps/web/CLAUDE.md
