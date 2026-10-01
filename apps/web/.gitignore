@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+#not include ai agents files in this project
+
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
